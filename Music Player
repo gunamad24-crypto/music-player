@@ -1,0 +1,329 @@
+const songs = [
+  {
+    name: "Chill Beat",
+    file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4"
+  },
+  {
+    name: "Night Vibes",
+    file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    cover: "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2"
+  },
+  {
+    name: "Relax Flow",
+    file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f"
+  }
+];
+
+let index = 0;
+
+const audio = document.getElementById("audio");
+const title = document.getElementById("title");
+const album = document.getElementById("album");
+const progress = document.getElementById("progress");
+const playBtn = document.getElementById("playBtn");
+const currentEl = document.getElementById("current");
+const durationEl = document.getElementById("duration");
+const volume = document.getElementById("volume");
+const toggle = document.getElementById("themeToggle");
+
+/* LOAD SONG */
+function loadSong(i) {
+  title.textContent = songs[i].name;
+  audio.src = songs[i].file;
+  album.src = songs[i].cover;
+}
+loadSong(index);
+
+/* PLAY / PAUSE */
+function playPause() {
+  if (audio.paused) {
+    audio.play();
+    playBtn.textContent = "⏸";
+    album.style.animationPlayState = "running";
+  } else {
+    audio.pause();
+    playBtn.textContent = "▶️";
+    album.style.animationPlayState = "paused";
+  }
+}
+
+/* NEXT / PREV */
+function nextSong() {
+  index = (index + 1) % songs.length;
+  loadSong(index);
+  audio.play();
+  playBtn.textContent = "⏸";
+  album.style.animationPlayState = "running";
+}
+
+function prevSong() {
+  index = (index - 1 + songs.length) % songs.length;
+  loadSong(index);
+  audio.play();
+  playBtn.textContent = "⏸";
+  album.style.animationPlayState = "running";
+}
+
+/* TIME + PROGRESS (FIXED) */
+audio.addEventListener("timeupdate", () => {
+  if (!audio.duration) return;
+
+  progress.style.width =
+    (audio.currentTime / audio.duration) * 100 + "%";
+
+  currentEl.textContent = formatTime(audio.currentTime);
+});
+
+audio.addEventListener("loadedmetadata", () => {
+  durationEl.textContent = formatTime(audio.duration);
+});
+
+/* SEEK */
+function setProgress(e) {
+  const width = e.currentTarget.clientWidth;
+  audio.currentTime = (e.offsetX / width) * audio.duration;
+}
+
+/* VOLUME */
+volume.oninput = () => {
+  audio.volume = volume.value;
+};
+
+/* THEME */
+toggle.onchange = () => {
+  document.body.classList.toggle("light");
+};
+
+/* FORMAT TIME */
+function formatTime(t) {
+  const m = Math.floor(t / 60);
+  const s = Math.floor(t % 60);
+  return `${m}:${s < 10 ? "0" + s : s}`;
+}
+
+/* END */
+audio.addEventListener("ended", () => {
+  playBtn.textContent = "▶️";
+  album.style.animationPlayState = "paused";
+});
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #121212;
+  color: #fff;
+  transition: 0.3s;
+}
+
+body.light {
+  background: #f2f2f2;
+  color: #000;
+}
+
+/* TITLE */
+.app-title {
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+/* PLAYER */
+.player {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  max-width: 420px;
+  padding: 15px;
+  border-radius: 20px 20px 0 0;
+  background: #1a1a1a;
+}
+
+body.light .player {
+  background: #ffffff;
+}
+
+/* TOP */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* TOGGLE */
+.switch {
+  width: 42px;
+  height: 22px;
+  position: relative;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #555;
+  border-radius: 20px;
+  transition: 0.3s;
+}
+
+.slider::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: white;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+input:checked + .slider {
+  background: #1db954;
+}
+
+input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* ALBUM */
+.album-container {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+#album {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  animation: spin 6s linear infinite;
+  animation-play-state: paused;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* PROGRESS */
+.progress-container {
+  height: 6px;
+  background: #444;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.progress {
+  height: 100%;
+  width: 0%;
+  background: #1db954;
+}
+
+/* TIME */
+.time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* CONTROLS */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin: 15px 0;
+}
+
+.controls button {
+  background: none;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+  color: inherit;
+}
+
+/* VOLUME */
+.volume-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#volume {
+  width: 100%;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Music Player</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dark">
+
+<h1 class="app-title">🎵 Music Player</h1>
+
+<div class="player">
+
+  <div class="top">
+    <h3 id="title">Loading...</h3>
+
+    <!-- THEME TOGGLE -->
+    <label class="switch">
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <!-- ALBUM -->
+  <div class="album-container">
+    <img id="album" src="" alt="album">
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-container" onclick="setProgress(event)">
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <!-- TIME -->
+  <div class="time">
+    <span id="current">00:00</span>
+    <span id="duration">00:00</span>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button onclick="prevSong()">⏮</button>
+    <button id="playBtn" class="play" onclick="playPause()">▶️</button>
+    <button onclick="nextSong()">⏭</button>
+  </div>
+
+  <!-- VOLUME -->
+  <div class="volume-box">
+    <span>🔊</span>
+    <input type="range" min="0" max="1" step="0.01"
+           value="0.5" id="volume">
+  </div>
+
+</div>
+
+<audio id="audio"></audio>
+
+<script src="script.js"></script>
+</body>
+</html>
